@@ -147,7 +147,7 @@ parseLogLines s = unlines $ foldr uniqr [] $ map parseIPFromLog $ lines s
 
 parsePageSequenceFromLogLines :: String -> String
 -- parseLogLines s = unlines $ foldl' uniql [] $ map parseIPFromLog $ lines s
-parsePageSequenceFromLogLines s = show $ foldr associater [] $ map parsePageSequenceFromLog $ lines s
+parsePageSequenceFromLogLines s = show $ foldr' associater [] $ map parsePageSequenceFromLog $ lines s
   --where associater_ :: PageSequence -> [PageSequence] -> [String]
     --    associater_ :: s xs = show $ associater_ s xs
 
@@ -166,7 +166,7 @@ uniqr s accum = if s `elem` accum
 
 uniqify :: [String] -> [String]
 --uniqify s = foldr uniqr s []
-uniqify s = foldl uniql s []
+uniqify s = foldl' uniql s []
 
 {- Working on 3 page problem -}
 ip1 = IPAddress "127.0.0.1"
@@ -187,6 +187,7 @@ data PageSequence = PageSequence {
     ip :: IPAddress
   , pages :: [Page]
 } deriving (Show, Eq)
+
 
 ps = PageSequence ip1 ([Page t1 r1])
 ps1 = PageSequence ip1 ([Page t2 r2])
