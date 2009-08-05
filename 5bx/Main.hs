@@ -9,10 +9,6 @@ import Happstack.Server.HTTP.Types (rqURL)
 import Happstack.Server.SimpleHTTP (askRq) 
 import Happstack.Helpers (exactdir)
 
---import Text.Html ((<<), body, p, renderHtml)
---import Text.XHtml.Strict ((<<), body, p, renderHtml)
-import Text.XHtml.Transitional ((<<), body, p, renderHtml)
-
 import FiveBeeX
 
 main = simpleHTTP (Conf 8080 Nothing) $ handleRequest
@@ -29,9 +25,9 @@ handleRequest = msum [
                     trace (rqURL rq) $
                     trace "hello zorld" $ 
                     --if isPrefixOf "/weigh" (rqURL rq)
-                    if "/weigh" `beginsWith` (rqURL rq)
+                    if "/weight" `beginsWith` (rqURL rq)
                       then
-                        return (renderHtml (body << p <<  "Weighing In"))
+                        weight
                       else mzero                         
                 ]
 -- Exactly the same as Data.List.isPrefixOf                
