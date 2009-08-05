@@ -4,8 +4,8 @@ import Control.Monad (msum, mzero)
 import Data.List (isPrefixOf)
 import Debug.Trace (trace)
 
-import Happstack.Server (simpleHTTP, Conf(..), ServerPartT)
-import Happstack.Server.HTTP.Types (rqURL)
+import Happstack.Server (simpleHTTP, Conf(..), toResponse, ServerPartT)
+import Happstack.Server.HTTP.Types (rqURL, Response)
 import Happstack.Server.SimpleHTTP (askRq) 
 import Happstack.Helpers (exactdir)
 
@@ -13,13 +13,13 @@ import FiveBeeX
 
 main = simpleHTTP (Conf 8080 Nothing) $ handleRequest
 
-handleRequest :: ServerPartT IO String
+handleRequest :: ServerPartT IO Response
 handleRequest = msum [
                  exactdir "/" home
                  , do
                        rq <- askRq
                        if (rqURL rq) == "/weigh"
-                         then return "Weighing In"
+                         then return $ toResponse "Weighing In"
                          else mzero
                  , askRq >>= \rq ->
                     trace (rqURL rq) $

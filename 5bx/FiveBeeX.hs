@@ -1,6 +1,6 @@
 module FiveBeeX where
 import Happstack.Server (ServerPartT, toResponse, ToMessage)
-
+import Happstack.Server.HTTP.Types (Response)
 import Happstack.Server.SimpleHTTP (askRq, ServerMonad)
 
 
@@ -9,13 +9,11 @@ import Happstack.Server.SimpleHTTP (askRq, ServerMonad)
 --import Text.XHtml.Transitional ((<<), (+++), body, form, p, renderHtml)
 import Text.XHtml.Transitional
 
-home :: (Monad m) => m String
-home = return "Howdy"
+home :: (Monad m) => m Response
+home = return $ toResponse "Howdy"
 
-weight :: (ServerMonad m) => m String
-weight = return $ renderHtml $ body <<
---weight = return $ body <<
--- Left off here... figure out how to do content-type text/html
+weight :: (ServerMonad m) => m Response
+weight = return $ toResponse $ body <<
     p <<  "Weighing In" +++
     (p << "hey") ! [identifier "the-para"] +++
     form ! [method "post", action "/weight", enctype "multipart/form-data"] <<
