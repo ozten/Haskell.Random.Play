@@ -16,8 +16,10 @@ weight :: (ServerMonad m) => m Response
 weight = return $ toResponse $ body <<
     p <<  "Weighing In" +++
     (p << "hey") ! [identifier "the-para"] +++
-    form ! [method "post", action "/weight", enctype "multipart/form-data"] <<
+    form ! [method "post", action "/weight/t", enctype "multipart/form-data"] <<
         fieldset <<
-            input ! [identifier "weight", name "weight", value "275"] +++
-            (button << "Save") ! [identifier "submit", name "submit", value "Save", thetype "submit"]
-    
+            (input ! [identifier "weight", name "weight", value "275"] +++
+            (button << "Save") ! [identifier "submit", name "submit", value "Save", thetype "submit"])
+
+record_weight :: (ServerMonad m) => m Response
+record_weight = return $ toResponse "oh ya"

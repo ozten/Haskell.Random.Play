@@ -5,7 +5,7 @@ import Data.List (isPrefixOf)
 import Debug.Trace (trace)
 
 import Happstack.Server (simpleHTTP, Conf(..), toResponse, ServerPartT)
-import Happstack.Server.HTTP.Types (rqURL, Response)
+import Happstack.Server.HTTP.Types (rqMethod, rqURL, Response)
 import Happstack.Server.SimpleHTTP (askRq) 
 import Happstack.Helpers (exactdir)
 
@@ -22,12 +22,16 @@ handleRequest = msum [
                          then return $ toResponse "Weighing In"
                          else mzero
                  , askRq >>= \rq ->
-                    trace (rqURL rq) $
+                    trace (show (rqMethod rq)) $
                     trace "hello zorld" $ 
                     --if isPrefixOf "/weigh" (rqURL rq)
                     if "/weight" `beginsWith` (rqURL rq)
                       then
-                        weight
+                        if "GET" == show (rqMethod rq)
+                          then
+                            weight
+                          else
+                            record_weight
                       else mzero                         
                 ]
 -- Exactly the same as Data.List.isPrefixOf                
