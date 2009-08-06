@@ -5,9 +5,12 @@ import Data.List (isPrefixOf)
 import Debug.Trace (trace)
 
 import Happstack.Server (simpleHTTP, Conf(..), toResponse, ServerPartT)
+
 import Happstack.Server.HTTP.Types (rqMethod, rqURL, Response)
-import Happstack.Server.SimpleHTTP (askRq) 
+import Happstack.Server.SimpleHTTP (askRq, getData) 
 import Happstack.Helpers (exactdir)
+
+import Happstack.Server.Helpers (getData')
 
 import FiveBeeX
 
@@ -21,9 +24,18 @@ handleRequest = msum [
                        if (rqURL rq) == "/weigh"
                          then return $ toResponse "Weighing In"
                          else mzero
+                 , do
+                       rq <- askRq
+                       if (rqURL rq) == "/experiment"
+                         then
+                            {-do
+                              WeightInfo weight <- getData'
+                              return $ toResponse $ show weight-}
+                              getData' >>= weightForIt
+                         else mzero
                  , askRq >>= \rq ->
                     trace (show (rqMethod rq)) $
-                    trace "hello zorld" $ 
+                    trace "hello zorld" $
                     --if isPrefixOf "/weigh" (rqURL rq)
                     if "/weight" `beginsWith` (rqURL rq)
                       then
@@ -31,9 +43,12 @@ handleRequest = msum [
                           then
                             weight
                           else
-                            record_weight
+                            record_weight rq
                       else mzero                         
                 ]
+weightForIt :: Integer -> ServerPartT IO Response
+weightForIt weight = (return $ toResponse $ show weight)
+
 -- Exactly the same as Data.List.isPrefixOf                
 beginsWith :: String -> String -> Bool
 beginsWith [] _ = True
