@@ -1,12 +1,17 @@
 module Main where
 
 import Control.Monad (msum, mzero)
+import Control.Monad.Reader (liftM)
+
 import Data.List (isPrefixOf)
+import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 
 import Happstack.Server (simpleHTTP, Conf(..), toResponse, ServerPartT)
 
-import Happstack.Server.HTTP.Types (rqMethod, rqURL, Response)
+import Happstack.Server.SURI (parse)
+
+import Happstack.Server.HTTP.Types (redirect, rqMethod, rqURL, Response)
 import Happstack.Server.SimpleHTTP (askRq, getData) 
 import Happstack.Helpers (exactdir)
 
@@ -28,11 +33,10 @@ handleRequest = msum [
                        rq <- askRq
                        if (rqURL rq) == "/experiment"
                          then
-                            {-do
-                              WeightInfo weight <- getData'
-                              return $ toResponse $ show weight-}
-                              getData' >>= weightForIt
+                           --return $ toResponse "huh"
+                           getData' >>= weightForIt
                          else mzero
+                 , exactdir "/redir" doRedirect
                  , askRq >>= \rq ->
                     trace (show (rqMethod rq)) $
                     trace "hello zorld" $
@@ -47,7 +51,10 @@ handleRequest = msum [
                       else mzero                         
                 ]
 weightForIt :: Integer -> ServerPartT IO Response
-weightForIt weight = (return $ toResponse $ show weight)
+weightForIt weight = return $ toResponse "hey" --( show weight )
+
+doRedirect :: (Monad m) => m Response
+doRedirect = return (redirect 302 (fromJust (parse "http://oface.ubuntu:8080/")) (toResponse "later"))
 
 -- Exactly the same as Data.List.isPrefixOf                
 beginsWith :: String -> String -> Bool
