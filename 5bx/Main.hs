@@ -1,18 +1,18 @@
 module Main where
 
-import Control.Monad (msum, mzero)
+import Control.Monad (mplus, msum, mzero)
 import Control.Monad.Reader (liftM)
 
 import Data.List (isPrefixOf)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 
-import Happstack.Server (simpleHTTP, Conf(..), toResponse, ServerPartT)
+import Happstack.Server (look, fromData, FromData, simpleHTTP, Conf(..), toResponse, ServerPartT)
 
 import Happstack.Server.SURI (parse)
 
 import Happstack.Server.HTTP.Types (redirect, rqMethod, rqURL, Response)
-import Happstack.Server.SimpleHTTP (askRq, getData) 
+import Happstack.Server.SimpleHTTP (askRq, getData, RqData) 
 import Happstack.Helpers (exactdir)
 
 import Happstack.Server.Helpers (getData')
@@ -50,8 +50,13 @@ handleRequest = msum [
                             record_weight rq
                       else mzero                         
                 ]
-weightForIt :: Integer -> ServerPartT IO Response
-weightForIt weight = return $ toResponse "hey" --( show weight )
+                
+data WeightInfo = WeightInfo { theWeight :: String }
+instance FromData WeightInfo where
+    fromData = liftM WeightInfo (look "weight" `mplus` return "0")
+    
+weightForIt :: String -> ServerPartT IO Response
+weightForIt weight = return $ toResponse weight
 
 doRedirect :: (Monad m) => m Response
 doRedirect = return (redirect 302 (fromJust (parse "http://oface.ubuntu:8080/")) (toResponse "later"))

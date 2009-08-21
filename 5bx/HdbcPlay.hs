@@ -3,7 +3,9 @@ module HdbcPlay where
 import Database.HDBC
 import Database.HDBC.MySQL
 import Control.Monad (liftM)
+
 import Config
+import Stats
 
 main = do conn <- connectMySQL defaultMySQLConnectInfo {
                     mysqlHost       = host,
@@ -23,8 +25,11 @@ main = do conn <- connectMySQL defaultMySQLConnectInfo {
           rs <- quickQuery' conn "SELECT id, weight, stretches, situps, backexts, pressups, chart FROM exercise_records" []
           -- trial and error... why is this
           -- printRs rs
-          let a = map printRow rs
-          putStrLn $ head a 
+          -- let a = map printRow rs
+          -- putStrLn $ head a
+          case recentStat rs of
+              Nothing -> return ()
+              Just x -> putStrLn $ show x
           -- not like this
           -- a  <- fmap printRs rs
           -- or
@@ -43,3 +48,7 @@ printRs x = putStrLn $ "First value: " ++ (fromSql (head (head x)))
 printRow :: [SqlValue] -> String
 printRow [id, weight, stretches, situps, backexts, pressups, chart] = f id ++ f weight ++ f stretches ++ f backexts ++ f pressups ++ f chart
     where f x = " " ++ fromSql x
+    
+recentStat :: [[SqlValue]] -> Maybe Stats
+recentStat [] = Nothing
+recentStat x = Just $ fromResults $ head x

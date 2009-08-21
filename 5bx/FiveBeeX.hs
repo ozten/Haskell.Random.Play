@@ -48,6 +48,16 @@ record_weight req = let weight = getWeight (rqInputs req)
                                   Nothing -> "Error"
                                   Just aWeight -> theWeight aWeight-}
                           
-data WeightInfo = WeightInfo { theWeight :: String }
-instance FromData WeightInfo where
-    fromData = liftM WeightInfo (look "weight" `mplus` return "0")
+{- http://totherme.livejournal.com/3674.html
+It's all about the function types
+Instead of focusing on runtime-time imperative behavior
+what are the types of the functions you'll need?
+
+Focus on data types and function type signatures
+
+write your qucikCheck properties in parrallel
+
+Stub stuff out
+
+Once you have no stubs left, run quick check
+-}
