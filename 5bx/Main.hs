@@ -2,6 +2,7 @@ module Main where
 
 import Control.Monad (mplus, msum, mzero)
 import Control.Monad.Reader (liftM)
+import Control.Monad.Trans
 
 import Data.List (isPrefixOf)
 import Data.Maybe (fromJust)
@@ -17,7 +18,13 @@ import Happstack.Helpers (exactdir)
 
 import Happstack.Server.Helpers (getData')
 
+import Database.HDBC
+import Database.HDBC.MySQL
+
+import Config
 import FiveBeeX
+import Stats
+import StatsDal
 
 main = simpleHTTP (Conf 8080 Nothing) $ handleRequest
 
@@ -36,6 +43,7 @@ handleRequest = msum [
                            --return $ toResponse "huh"
                            getData' >>= weightForIt
                          else mzero
+                 , exactdir "/currentWeight" currentWeight
                  , exactdir "/redir" doRedirect
                  , askRq >>= \rq ->
                     trace (show (rqMethod rq)) $
@@ -45,7 +53,7 @@ handleRequest = msum [
                       then
                         if "GET" == show (rqMethod rq)
                           then
-                            weight
+                            showWeight
                           else
                             record_weight rq
                       else mzero                         
@@ -55,8 +63,16 @@ data WeightInfo = WeightInfo { theWeight :: String }
 instance FromData WeightInfo where
     fromData = liftM WeightInfo (look "weight" `mplus` return "0")
     
+currentWeight :: ServerPartT IO Response
+currentWeight = connectDb >>= (\conn ->
+                    liftIO (currentStat conn) >>= showStats)
+                where
+                  connectDb = liftIO $ connectMySQL defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
+                  showStats :: Stats -> ServerPartT IO Response
+                  showStats stats = return $ toResponse $ show stats
+    
 weightForIt :: String -> ServerPartT IO Response
-weightForIt weight = return $ toResponse weight
+weightForIt aWeight = return $ toResponse aWeight
 
 doRedirect :: (Monad m) => m Response
 doRedirect = return (redirect 302 (fromJust (parse "http://oface.ubuntu:8080/")) (toResponse "later"))

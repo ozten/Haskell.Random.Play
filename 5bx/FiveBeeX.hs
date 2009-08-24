@@ -14,7 +14,7 @@ import Happstack.Server (fromData, FromData, look, Request, ServerPartT, toRespo
 import Happstack.Server.HTTP.Types (Response, inputValue, Input)
 import Happstack.Server.SimpleHTTP (askRq, getData, rqInputs, ServerMonad)
 
-
+import Config
 
 --import Text.Html ((<<), body, p, renderHtml)
 --import Text.XHtml.Strict ((<<), body, p, renderHtml)
@@ -24,8 +24,8 @@ import Text.XHtml.Transitional
 home :: (Monad m) => m Response
 home = return $ toResponse "Howdy"
 
-weight :: (ServerMonad m) => m Response
-weight = return $ toResponse $ body <<
+showWeight :: (ServerMonad m) => m Response
+showWeight = return $ toResponse $ body <<
     p <<  "Weighing In" +++
     (p << "hey") ! [identifier "the-para"] +++
     form ! [method "post", action "/experiment", enctype "multipart/form-data"] <<
