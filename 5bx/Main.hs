@@ -21,6 +21,8 @@ import Happstack.Server.Helpers (getData')
 import Database.HDBC
 import Database.HDBC.MySQL
 
+import Text.XHtml.Transitional ((<<), (+++), body, h1, Html, p, strong)
+
 import Config
 import FiveBeeX
 import Stats
@@ -69,7 +71,13 @@ currentWeight = connectDb >>= (\conn ->
                 where
                   connectDb = liftIO $ connectMySQL defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
                   showStats :: Stats -> ServerPartT IO Response
-                  showStats stats = return $ toResponse $ show stats
+                  showStats stats = return $ toResponse $ display stats
+
+display :: Stats -> Html
+display stats = body <<
+    h1 << "Current Weight" +++
+    p << ("You current weight is " +++
+        strong << show ( weight stats )) 
     
 weightForIt :: String -> ServerPartT IO Response
 weightForIt aWeight = return $ toResponse aWeight
