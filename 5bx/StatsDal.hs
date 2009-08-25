@@ -1,5 +1,9 @@
 module StatsDal where
 
+import Control.Monad (liftM)
+import Control.Monad.Trans (liftIO)
+
+
 import Database.HDBC (fromSql, SqlValue, quickQuery')
 import Database.HDBC.MySQL (MySQLConnectInfo)
 import Database.HDBC.Types (disconnect, IConnection)
@@ -18,12 +22,14 @@ fromResults [i, w, st, si, b, p, c] = Stats id weight stretches situps backexts 
             pressups = f p
             chart = f c
 
-currentStat :: (IConnection a) => a -> IO Stats
+currentStat :: (IConnection a) => a -> IO (Maybe Stats)
 currentStat conn = query conn >>=
-                   process
+                    process
 
-process :: [[SqlValue]] -> IO Stats
-process rs = return $ fromResults $ head rs
+process :: [[SqlValue]] -> IO (Maybe Stats)
+process [] = return Nothing
+process rs = return (Just (fromResults $ head rs))
+
 
 query :: (IConnection a) => a -> IO [[SqlValue]]
-query conn = quickQuery' conn "SELECT id, weight, stretches, situps, backexts, pressups, chart FROM exercise_records ORDER BY id DESC LIMIT 1" []
+query conn = quickQuery' conn "SELECT id, weight, stretches, situps, backexts, pressups, chart FROM exercise_records WHERE id > 100 ORDER BY id DESC LIMIT 1" []

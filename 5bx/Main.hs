@@ -70,14 +70,17 @@ currentWeight = connectDb >>= (\conn ->
                     liftIO (currentStat conn) >>= showStats)
                 where
                   connectDb = liftIO $ connectMySQL defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
-                  showStats :: Stats -> ServerPartT IO Response
+                  showStats :: Maybe Stats -> ServerPartT IO Response
                   showStats stats = return $ toResponse $ display stats
 
-display :: Stats -> Html
+display :: Maybe Stats -> Html
 display stats = body <<
     h1 << "Current Weight" +++
     p << ("You current weight is " +++
-        strong << show ( weight stats )) 
+        strong << doStats stats)
+    where doStats :: Maybe (Stats) -> String
+          doStats Nothing = "unknown"
+          doStats stat = show (weight (fromJust stat))
     
 weightForIt :: String -> ServerPartT IO Response
 weightForIt aWeight = return $ toResponse aWeight
