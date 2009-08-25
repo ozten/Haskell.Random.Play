@@ -8,7 +8,7 @@ import Database.HDBC (fromSql, SqlValue, quickQuery')
 import Database.HDBC.MySQL (MySQLConnectInfo)
 import Database.HDBC.Types (disconnect, IConnection)
 
-import Stats
+import StatsModel
 
 fromResults :: [SqlValue] -> Stats
 fromResults [i, w, st, si, b, p, c] = Stats id weight stretches situps backexts pressups chart
@@ -32,4 +32,4 @@ process rs = return (Just (fromResults $ head rs))
 
 
 query :: (IConnection a) => a -> IO [[SqlValue]]
-query conn = quickQuery' conn "SELECT id, weight, stretches, situps, backexts, pressups, chart FROM exercise_records WHERE id > 100 ORDER BY id DESC LIMIT 1" []
+query conn = quickQuery' conn "SELECT id, weight, stretches, situps, backexts, pressups, chart FROM exercise_records ORDER BY id DESC LIMIT 1" []

@@ -25,19 +25,16 @@ import Text.XHtml.Transitional ((<<), (+++), body, h1, Html, p, strong)
 
 import Config
 import FiveBeeX
-import Stats
+import StatsModel
 import StatsDal
+import WeightController
+import WeightView
 
 main = simpleHTTP (Conf 8080 Nothing) $ handleRequest
 
 handleRequest :: ServerPartT IO Response
 handleRequest = msum [
                  exactdir "/" home
-                 , do
-                       rq <- askRq
-                       if (rqURL rq) == "/weigh"
-                         then return $ toResponse "Weighing In"
-                         else mzero
                  , do
                        rq <- askRq
                        if (rqURL rq) == "/experiment"
@@ -55,7 +52,7 @@ handleRequest = msum [
                       then
                         if "GET" == show (rqMethod rq)
                           then
-                            showWeight
+                            doWeight
                           else
                             record_weight rq
                       else mzero                         

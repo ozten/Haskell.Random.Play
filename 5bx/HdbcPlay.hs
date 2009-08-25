@@ -5,7 +5,7 @@ import Database.HDBC.MySQL
 import Control.Monad (liftM)
 
 import Config
-import Stats
+import StatsModel
 
 main = do conn <- connectMySQL defaultMySQLConnectInfo {
                     mysqlHost       = host,
