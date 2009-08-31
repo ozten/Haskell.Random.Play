@@ -7,6 +7,9 @@ import Control.Monad.Trans
 import Data.List (isPrefixOf)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
+--import Data.ByteString (ByteString, read)
+import qualified Data.ByteString.Lazy.Char8 as B
+
 
 import Happstack.Server (look, fromData, FromData, Request, simpleHTTP, Conf(..), toResponse, ServerPartT)
 
@@ -44,12 +47,26 @@ doWeight = connectDb >>= (\conn ->
                   showStats stats =  showWeight (show (weight (fromJust stats)))
 
 -- Left off at http://tutorial.happstack.com/tutorial/get-and-post
-record_weight :: (ServerMonad m) => Request -> m Response
-record_weight req = let weight = getWeight (rqInputs req)
-                    in trace (show weight) $
-                       return $ toResponse "oh ya"
-                    where getWeight :: [(String, Input)] -> String
-                          getWeight d = show (inputValue $ snd $ head $ filter (\i -> (fst i == "weight")) d)
+recordWeight :: Request -> ServerPartT IO Response
+recordWeight req = let weight = getWeight (rqInputs req)
+                   in trace ("Seeing " ++ weight) connectDb >>= (\conn ->
+                           liftIO $ saveStats conn (stats (toInt weight))) >>                           
+                      return ( toResponse "oh ya")
+                   where connectDb = liftIO $ connectMySQL defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
+                         getWeight :: [(String, Input)] -> String
+                         getWeight d = B.unpack ( inputValue $ snd $ head $ filter (\i -> (fst i == "weight")) d)
+                         toInt :: String -> Integer
+                         toInt s = trace s (read s)
+                         stats :: Integer -> Stats
+                         stats weight = Stats (-1) weight 0 0 0 0 1
+                         
+segFault = let connectDb =  connectMySQL defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
+               s = (Stats (-1) 279 0 0 0 0 1)
+           in do conn <- connectDb
+                 --rs <- saveStats conn s
+                 xsaveStats conn s
+                 commit conn
+                 --disconnect conn
                           {-getWeight d = do
                               maybeTheW <- getData'
                               case maybeTheW of

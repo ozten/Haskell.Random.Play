@@ -30,7 +30,7 @@ import StatsDal
 import WeightController
 import WeightView
 
-main = simpleHTTP (Conf 8080 Nothing) $ handleRequest
+main = handleSqlError $ trace "Starting up, try port 8080" (simpleHTTP (Conf 8080 Nothing) $ handleRequest)
 
 handleRequest :: ServerPartT IO Response
 handleRequest = msum [
@@ -45,16 +45,13 @@ handleRequest = msum [
                  , exactdir "/currentWeight" currentWeight
                  , exactdir "/redir" doRedirect
                  , askRq >>= \rq ->
-                    trace (show (rqMethod rq)) $
-                    trace "hello zorld" $
-                    --if isPrefixOf "/weigh" (rqURL rq)
                     if "/weight" `beginsWith` (rqURL rq)
                       then
                         if "GET" == show (rqMethod rq)
                           then
                             doWeight
                           else
-                            record_weight rq
+                            recordWeight rq
                       else mzero                         
                 ]
                 
