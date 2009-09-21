@@ -1,0 +1,10 @@
+-- ghc --make -o CgiPlay.cgi CgiPlay.hs 
+import Network.CGI
+
+cgiMain :: CGI CGIResult
+cgiMain = output "Hello World!"
+
+--dumpEnv :: MonadCGI m => m CGIResult
+
+main :: IO ()
+main = runCGI (handleErrors cgiMain)

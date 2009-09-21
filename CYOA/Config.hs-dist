@@ -1,0 +1,7 @@
+module Config where
+
+host       = "localhost"
+database   = "dev"
+username   = "guy"
+password   = "sekrit"
+unixSocket = "/var/run/mysqld/mysqld.sock"
