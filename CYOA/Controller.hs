@@ -1,6 +1,8 @@
 module Controller where
 import Network.CGI
 import Data.List (elemIndex)
+
+import Auth
 import Model
 import View
 
@@ -40,11 +42,15 @@ viewPage path method =
         story_id = fst $ parts
         page_id = snd $ parts
     in  do pages <- liftIO $ Model.getPage page_id story_id
+           stories <- liftIO $ Model.getStory story_id
            case (length pages) of
                1 -> let page = head pages
-                    in output $ View.viewPage page
+                    in case (length stories) of
+                            1 -> case page_id of
+                                 "start" -> output $ ( View.viewStartPage (head stories) page )
+                                 _ -> output $ View.viewPage (head stories) page                                      
+                            _ -> output ("Error: Unknown Story " ++ story_id)
                0 -> output "Error that page doesn't exist" -- TODO 404
-    
 
 splitPath :: String -> String -> (String, String)
 splitPath path urlPrefix =
@@ -66,13 +72,42 @@ editPage path method =
                            "POST" -> processUpdatePageOrRedirect page
                            _ -> output $ View.editPage page
                0 -> output "Error that page doesn't exist" -- TODO 404
-                   
+
+editStory path method =
+    let story_id = drop (length "/story/edit/") path        
+    in do stories <- liftIO $ Model.getStory story_id
+          case (length stories) of
+               1 -> let story = head stories
+                    in case method of
+                           "POST" -> processUpdateStoryOrRedirect story
+                           _ -> output $ View.editStory story
+               0 -> output "Error that story doesn't exist" -- TODO 404
+
+processUpdateStoryOrRedirect story =
+    do action <- getInput "action"
+       case action of
+           Just label | label == cancelLabel -> _redirect $ "/page/view/" ++ (story_id story) ++ "/start"
+           Just label | label == saveLabel -> processStoryUpdate story
+           _ -> output "Error unknown action"
+
+processStoryUpdate story =
+    do title <- getInput "title"
+       authors <- getInput "authors"
+       case title of
+           Just t ->
+               case authors of
+                   Just a -> do liftIO $ Model.updateStory $ reviseStory story t a
+                                _redirect $ "/page/view/" ++ (story_id story) ++ "/start"
+                   Nothing -> output "Error missing author input, cannot update Story"
+           Nothing -> output "Error missing title input, cannot update Story"
+           
 processUpdatePageOrRedirect page =
     do action <- getInput "action"
        case action of
            Just label | label == cancelLabel -> _redirect $ "/page/view/" ++ (story_fk_id page) ++ "/" ++ (page_id page)
            Just label | label == saveLabel -> processUpdate page
            _ -> output "Error unknown action"
+
 
 processUpdate page =
     do prose <- getInput "prose"

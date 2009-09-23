@@ -100,7 +100,7 @@ getPages story_id =
        params = [toSql story_id]
 
 -- update a page
-
+{-
 getS story_id =
     do conn <- connect
        rs <- quickQuery' conn sql params
@@ -110,7 +110,7 @@ getS story_id =
     where
        sql = "SELECT id, title, authors FROM stories where id = ?"
        params = [toSql story_id]
-
+-}
 
 -- delete a page
 getStory :: String -> IO [Story]
@@ -133,7 +133,28 @@ loadStory rows | length rows == 1 =
             Story (fromSql i) (fromSql t) (fromSql a)
 loadStory rows = head (loadStory [(head rows)]) : loadStory (tail rows)
           
+updateStory :: Story -> IO Integer
+updateStory story =
+    do conn <- connect
+       rs <- run conn sql params
+       commit conn
+       disconnect conn
+       return rs
+    where
+       sql = "UPDATE stories SET title = ?, authors = ? WHERE id = ?"
+       params = [toSql (title story), toSql (authors story), toSql (story_id story)]
 
--- update a story
+reviseStory :: Story -> String -> String -> Story
+reviseStory story title authors = Story (story_id story) title authors
 
 -- delete a story
+deleteStory :: Story -> IO Integer
+deleteStory story =
+    do conn <- connect
+       rs <- run conn sql params
+       commit conn
+       disconnect conn
+       return rs
+    where
+       sql = "DELETE FROM stories WHERE id = ?"
+       params = [toSql (story_id story)]
