@@ -1,3 +1,5 @@
+AddType text/css .css
+
 # Turn on URL rewriting
 RewriteEngine On
 

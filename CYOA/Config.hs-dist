@@ -1,7 +1,11 @@
 module Config where
 
+-- MySQL Database Connection info
 host       = "localhost"
 database   = "dev"
 username   = "guy"
 password   = "sekrit"
 unixSocket = "/var/run/mysqld/mysqld.sock"
+
+-- Worst Access Control Ever...
+editors = ["127.0.0.1"]
