@@ -6,9 +6,10 @@ import Control.Monad.Trans (liftIO)
 import Debug.Trace (putTraceMsg, trace)
 
 import Database.HDBC (commit, disconnect, fromSql, handleSqlError, run, SqlValue, toSql, quickQuery')
-import Database.HDBC.MySQL (MySQLConnectInfo)
+import Database.HDBC.MySQL (MySQLConnectInfo, mysqlHost, connectMySQL, defaultMySQLConnectInfo, mysqlDatabase, mysqlUser, mysqlPassword, mysqlUnixSocket)
 import Database.HDBC.Types (disconnect, IConnection)
 
+import Config
 import StatsModel
 
 fromResults :: [SqlValue] -> Stats
@@ -22,6 +23,12 @@ fromResults [i, w, st, si, b, p, c] = Stats id weight stretches situps backexts 
             backexts = f b
             pressups = f p
             chart = f c
+
+getCurrentStat :: IO (Maybe Stats)
+getCurrentStat = do conn <- connect
+                    currentStat conn
+        where connect = connectMySQL $ defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
+
 
 currentStat :: (IConnection a) => a -> IO (Maybe Stats)
 currentStat conn = query conn >>=
@@ -44,7 +51,8 @@ xsaveStats conn stats = {-let rs = run conn sql params
                           let stringRows = map convRow rs2
                           mapM_ putStrLn stringRows
                           --putTraceMsg (show stats)
-                          --disconnect conn
+                          disconnect conn
+                          commit conn
                           return rs
                 where
                     sql = "INSERT INTO exercise_records (weight, stretches, situps, backexts, pressups, chart, created, updated) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
@@ -59,6 +67,13 @@ xsaveStats conn stats = {-let rs = run conn sql params
                                          Nothing -> "NULL" 
                     convRow x = fail $ "Unexpected result: " ++ show x
 
+recordWeight :: Integer -> IO Integer
+recordWeight weight =
+    do conn <- connection
+       saveStats conn (stats weight)
+    where
+        connection = connectMySQL $ defaultMySQLConnectInfo { mysqlHost = host, mysqlDatabase = database, mysqlUser = username, mysqlPassword = password, mysqlUnixSocket = unixSocket}
+        stats weight = Stats (-1) weight 0 0 0 0 1
                    
 saveStats :: (IConnection a) => a -> Stats -> IO Integer
 saveStats conn stats = {-let rs = run conn sql params

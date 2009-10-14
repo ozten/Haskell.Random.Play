@@ -25,17 +25,29 @@ createPage path method =
                                 case (length stories) of
                                     1 -> do pages <- liftIO $ Model.getPage page_id story_id
                                             case (length pages) of
-                                                0 -> do results <- liftIO $ Model.createPage page_id story_id
-                                                        case results of
-                                                           1 -> _redirect $ "/page/edit/" ++ story_id ++ "/" ++ page_id
-                                                           _ ->  output "Story already exists? Some other Error?"
+                                                0 -> do action <- getInput "action"
+                                                        case action of
+                                                            Just label | label == cancelLabel -> do r <- getInput "referer"
+                                                                                                    redirect r
+                                                            Just label | label == saveLabel -> processPageUpdate page_id story_id                                                                       
                                                 -- start page always exists, because it's created when the story is created...
                                                 _ -> _redirect $ "/page/view/" ++ story_id ++ "/" ++ page_id -- TODO error message "Page already exists"
                                     _ -> output $ "Couldn't find the story " ++ story_id
-           _ -> output $ View.createPageForm story_id
+           _ -> do r <- getVar "HTTP_REFERER"
+                   case r of
+                       Nothing -> output $ View.createPageForm story_id ("/pages/" ++ story_id ++ "/start")
+                       Just referer -> output $ View.createPageForm story_id referer
+           
     where
         story_id :: String
         story_id = drop (length "/page/create/") path
+        processPageUpdate page_id story_id =
+            do results <- liftIO $ Model.createPage page_id story_id
+               case results of
+                   1 -> _redirect $ "/page/edit/" ++ story_id ++ "/" ++ page_id
+                   _ ->  output "Story already exists? Some other Error?"
+        redirect Nothing = output "Error, expected referer in form data"
+        redirect (Just referer) = _redirect referer
 
 viewPage path method =
     let parts = splitPath path "/page/view/"

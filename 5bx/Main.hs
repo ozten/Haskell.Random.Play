@@ -1,3 +1,7 @@
+{-
+I wanted to host this on nearlyfreespeech, so I switched from Main.hs based on HappStack
+to MainCgi.hs
+-}
 module Main where
 
 import Control.Monad (mplus, msum, mzero)
@@ -9,11 +13,12 @@ import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 
 import Happstack.Server (look, fromData, FromData, simpleHTTP, Conf(..), toResponse, ServerPartT)
+import Happstack.Server.FastCGI
 
 import Happstack.Server.SURI (parse)
 
 import Happstack.Server.HTTP.Types (redirect, rqMethod, rqURL, Response)
-import Happstack.Server.SimpleHTTP (askRq, getData, RqData) 
+import Happstack.Server.SimpleHTTP (askRq, getData, RqData, ToMessage) 
 import Happstack.Helpers (exactdir)
 
 import Happstack.Server.Helpers (getData')
@@ -30,7 +35,13 @@ import StatsDal
 import WeightController
 import WeightView
 
-main = handleSqlError $ trace "Starting up, try port 8080" (simpleHTTP (Conf 8080 Nothing) $ handleRequest)
+--main = handleSqlError $ trace "Starting up, try port 8080" (simpleHTTP (Conf 8080 Nothing) $ handleRequest)
+
+
+simpleCGI :: (ToMessage a) => ServerPartT IO a -> IO ()
+simpleCGI = runFastCGIConcurrent 10 . serverPartToCGI
+ 
+main = simpleCGI handleRequest
 
 handleRequest :: ServerPartT IO Response
 handleRequest = msum [
@@ -80,7 +91,7 @@ weightForIt :: String -> ServerPartT IO Response
 weightForIt aWeight = return $ toResponse aWeight
 
 doRedirect :: (Monad m) => m Response
-doRedirect = return (redirect 302 (fromJust (parse "http://oface.ubuntu:8080/")) (toResponse "later"))
+doRedirect = return (Happstack.Server.HTTP.Types.redirect 302 (fromJust (parse "http://oface.ubuntu:8080/")) (toResponse "later"))
 
 -- Exactly the same as Data.List.isPrefixOf                
 beginsWith :: String -> String -> Bool
