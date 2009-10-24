@@ -114,7 +114,7 @@ template title content sidebar = showHtml $
     
         ((header <<
             ((thetitle << title) +++
-            (thelink ! [htmlAttr "type" << "text/css", htmlAttr "href" << "http://cyoa.ubuntu/stylo.css",
+            (thelink ! [htmlAttr "type" << "text/css", htmlAttr "href" << "/stylo.css",
                         htmlAttr "media" << "screen", htmlAttr "rel" << "stylesheet"] << ""))) +++
          (body << (
              d "header" "" "" +++
