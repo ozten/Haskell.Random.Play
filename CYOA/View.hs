@@ -20,7 +20,7 @@ createPageForm story referer =
                     d "" "button-group" (
                         input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << cancelLabel] +++
                         input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << saveLabel])))
-             noHtml
+             (listPagesNav story)
 
 viewPage :: Story -> Page -> String
 viewPage story page = commonViewPage story page noHtml
@@ -40,7 +40,6 @@ commonViewPage story page preAmble =
          (thediv << primHtml (prose page)))
         (thediv <<
             toolbox story page)
-        
 
 toolbox :: Story -> Page -> Html
 toolbox story page = h3 << "Author's Toolbox" +++ ulist << 
@@ -50,11 +49,15 @@ toolbox story page = h3 << "Author's Toolbox" +++ ulist <<
                 (anchor ! [htmlAttr "href" << ("/page/create/" ++ story_fk_id page)] << "Add a Page")) +++
               (li <<
                 (anchor ! [htmlAttr "href" << ("/pages/" ++ story_fk_id page)] << "List All Pages")))
-                
+
+--toolboxWrapper
+toolboxWrapper c = h3 << "Author's Toolbox" +++ c
+
 toolboxLight :: String -> Html
-toolboxLight story = h3 << "Author's Toolbox" +++ ulist << 
+toolboxLight story = toolboxWrapper ( ulist <<
+--toolboxLight story = h3 << "Author's Toolbox" +++ ulist << 
               ((li <<
-                (anchor ! [htmlAttr "href" << ("/pages/" ++ story)] << "Add a Page")))
+                (anchor ! [htmlAttr "href" << ("/page/create/" ++ story)] << "Add a Page"))))
 
 -- TODO mark the contents with some special code and then only unescape these magical blocks (???)
 -- Consider uring HStringTemplate instead of Text.Xhtml
@@ -70,7 +73,8 @@ editPage page =
                 d "" "button-group" (
                     input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << cancelLabel] +++
                     input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << saveLabel]))))
-        (anchor ! [htmlAttr "href" << ("/page/delete/" ++ (story_fk_id page) ++ "/" ++ (page_id page))] << "Delete This Page")
+-- AOK
+        (toolboxWrapper (ulist << (li << (anchor ! [htmlAttr "href" << ("/page/delete/" ++ (story_fk_id page) ++ "/" ++ (page_id page))] << "Delete This Page"))))
         
 viewDeleteForm :: Page -> String
 viewDeleteForm page =
@@ -81,8 +85,10 @@ viewDeleteForm page =
             fieldset << (
                 input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << cancelLabel] +++
                 input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << deleteLabel])))
-        noHtml 
-                
+        (listPagesNav $ story_fk_id page)
+        
+listPagesNav story = (toolboxWrapper (ulist << (li <<
+                (anchor ! [htmlAttr "href" << ("/pages/" ++ story)] << "List All Pages"))))                
 listPages story_id pages =
     template ("All pages in " ++ story_id)
              ((h1 << ("All pages in " ++ story_id)) +++
@@ -114,7 +120,7 @@ template title content sidebar = showHtml $
              d "header" "" "" +++
              d "center" "" ((d "right-nav" "" sidebar) +++ (d "content" "" content)) +++
              -- (thediv ! [htmlAttr "class" << "content"] << content) +++
-             d "footer" "" (thediv << "About")) +++
+             d "footer" "" noHtml) +++
             script ! [htmlAttr "type" << "text/javascript", htmlAttr "src" << "/behavior.js"] << ""))
 
 d id c stuff | id == ""= thediv ! [htmlAttr "class" << c] << stuff
@@ -126,7 +132,7 @@ editStory story =
          (form ! [htmlAttr "method" << "post", htmlAttr "action" << ("/story/edit/" ++ (story_id story))] <<
             fieldset << (
                 input ! [htmlAttr "name" << "title", htmlAttr "type" << "text", htmlAttr "value"  << (Model.title story)] +++
-                textarea ! [htmlAttr "name" << "authors", htmlAttr "cols" << "40", htmlAttr "rows" << "4"] << (authors story) +++
+                textarea ! [htmlAttr "name" << "authors", htmlAttr "cols" << "40", htmlAttr "rows" << "8"] << (authors story) +++
                 d "" "button-group" (
                     input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << cancelLabel] +++
                     input ! [htmlAttr "type" << "submit", htmlAttr "name" << "action", htmlAttr "value" << saveLabel]))))

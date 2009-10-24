@@ -88,20 +88,22 @@ input[type=text],input[type=password],textarea{width:12.25em;*width:11.9em;}
 
 /** behavior CSS */
 
-div.content { padding: 1em; }
+html, body{background-color: #DDD;}
+div.content { padding: 1em;}
 img{border:none;}
-#header{height:100px; background-color:#555555;margin:0px; padding:0px;}
-#center{min-height:300px; background-color:#CCCCCC; border:#FFFFFF 2px solid;margin:0px 0px 0px 150px; padding:0px;}
+
+#header{height:20px; background-color:#DDD;margin:0px; padding:0px;}
+#center{min-height:300px; background-color:#DDD; border:#DDD 2px solid;margin:0px 0px 0px 15px; padding:0px;}
 #content{margin-right: 160px; }
 #right-nav{float: right; width: 150px; }
-#footer{height:50px; background-color:#555555; border-top:#FFFFFF 2px solid;margin:0px; padding:0px;}
-#editor { width: 100%; height: 10em;}
+#footer{height:50px; background-color:#DDD; border-top:#DDD 2px solid;margin:0px; padding:0px;}
+#editor { width: 100%; height: 20em;}
 
-.button-group {text-align: right;}
+.button-group {text-align: left;}
 
-#content h1 { text-align: center; }
+#content h1 { text-align: left; }
 #content p { margin-left: 10px; }
 #content { text-align: left; }
 
 #right-nav { text-align: left; border: solid 1px #333; background-color: #EEE;}
-#right-nav div h3 {margin-left: 5px; }
+#right-nav h3 {margin-left: 5px; }
