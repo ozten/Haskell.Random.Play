@@ -29,7 +29,7 @@ createPage path method =
                                                         case action of
                                                             Just label | label == cancelLabel -> do r <- getInput "referer"
                                                                                                     redirect r
-                                                            Just label | label == saveLabel -> processPageUpdate page_id story_id                                                                       
+                                                            Just label | label == saveLabel -> processPageUpdate page_id story_id                                                            
                                                 -- start page always exists, because it's created when the story is created...
                                                 _ -> _redirect $ "/page/view/" ++ story_id ++ "/" ++ page_id -- TODO error message "Page already exists"
                                     _ -> output $ "Couldn't find the story " ++ story_id
@@ -62,7 +62,7 @@ viewPage path method =
                                  "start" -> output $ ( View.viewStartPage (head stories) page )
                                  _ -> output $ View.viewPage (head stories) page                                      
                             _ -> output ("Error: Unknown Story " ++ story_id)
-               0 -> output "Error that page doesn't exist" -- TODO 404
+               0 -> output $ "Error the page '" ++ path ++ "' doesn't exist yet." -- TODO 404
 
 splitPath :: String -> String -> (String, String)
 splitPath path urlPrefix =

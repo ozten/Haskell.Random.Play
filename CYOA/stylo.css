@@ -102,8 +102,13 @@ img{border:none;}
 .button-group {text-align: left;}
 
 #content h1 { text-align: left; }
-#content p { margin-left: 10px; }
+/* #content p { margin-left: 10px; } */
 #content { text-align: left; }
 
 #right-nav { text-align: left; border: solid 1px #333; background-color: #EEE;}
 #right-nav h3 {margin-left: 5px; }
+
+#all-pages-add-link { margin-top: 10px; }
+
+/* Editing Story Metadata */
+#story-title, #story-authors {width: 40em; }
